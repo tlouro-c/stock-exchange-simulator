@@ -24,6 +24,7 @@ public class RoutingTable extends ConcurrentHashMap<Integer, SocketChannel> {
 	@Override
 	public String toString() {
 		var result = "";
+		result += " [ID]  -> [Local Address]\n";
 		for (var entry : this.entrySet()) {
 			result += entry.getKey() + " -> ";
 			try {
@@ -32,6 +33,9 @@ public class RoutingTable extends ConcurrentHashMap<Integer, SocketChannel> {
 			} catch (Exception e) {
 				result += "closed\n";
 			}
+		}
+		if (this.entrySet().isEmpty()) {
+			result += "(empty)";
 		}
 		return result;
 	}

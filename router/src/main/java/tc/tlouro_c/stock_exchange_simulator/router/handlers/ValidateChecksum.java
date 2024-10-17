@@ -1,57 +1,26 @@
 package tc.tlouro_c.stock_exchange_simulator.router.handlers;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
+import java.nio.channels.SocketChannel;
 
-import tc.tlouro_c.stock_exchange_simulator.router.PortThread;
+import tc.tlouro_c.stock_exchange_simulator.FixRequest;
+import tc.tlouro_c.stock_exchange_simulator.router.PortsListener;
+import tc.tlouro_c.utils.Logger;
 
-public class ValidateChecksum implements ForwardRequestHandler {
-
-	ForwardRequestHandler nextHandler;
-
-	@Override
-	public void setNextHandler(ForwardRequestHandler nextHandler) {
-		this.nextHandler = nextHandler;
-	}
+public class ValidateChecksum extends ForwardRequestHandler {
 
 	@Override
-	public void handleRequest(ByteBuffer request, PortThread portThread) {
+	public void handleRequest(SocketChannel channel, FixRequest request,
+		PortsListener portsListener) throws FixRequest.InvalidChecksumException {
 
 		try {
-			validateChecksum(request);
-			nextHandler.handleRequest(request, portThread);
-		} catch (InvalidChecksumException e) {
-			//TODO Handle invalid checksum
-		}
-	}
-
-	public void validateChecksum(ByteBuffer request) throws InvalidChecksumException {
-
-		String requestString = StandardCharsets.UTF_8.decode(request).toString();
-		try {
-			int checksumIndex = requestString.lastIndexOf("10=");
-			String checksum = requestString.substring(checksumIndex + 3, requestString.length() - 1);
-			String toSum = requestString.substring(0, checksumIndex);
-
-			if (Integer.parseInt(checksum) != toSum.chars().sum() % 256) {
-				throw new InvalidChecksumException();
-			}
-
+			request.parse();
+			request.validateChecksum();
+			nextHandler.handleRequest(channel, request, portsListener);
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new InvalidChecksumException("Invalid request");
+			try {
+				Logger.WARNING("Checksum validation failed for message from " + channel.getRemoteAddress());
+			} catch (Exception _e) {}
+			throw new FixRequest.InvalidChecksumException();
 		}
 	}
-
-	private class InvalidChecksumException extends Exception {
-
-		private InvalidChecksumException(String message) {
-			super(message);
-		}
-		
-		private InvalidChecksumException() {
-			super("Invalid checksum");
-		}
-	}
-
 }

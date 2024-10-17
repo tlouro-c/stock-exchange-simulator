@@ -8,32 +8,39 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class PortThread implements Runnable {
+import tc.tlouro_c.stock_exchange_simulator.FixRequest;
+import tc.tlouro_c.stock_exchange_simulator.router.handlers.*;
+import tc.tlouro_c.utils.Logger;
 
-	private RoutingTable routingTable;
+public class PortsListener {
+
+	private Router router;
 	private ConcurrentHashMap<SocketChannel, ConcurrentLinkedDeque<ByteBuffer>> channelPendingData;
+	private ConcurrentLinkedQueue<SocketChannel> toWriteQueue;
 	private ExecutorService processRequestsThreadPool;
 	private Selector selector;
-	private int port;
 
-	public PortThread(RoutingTable routingTable, int port) {
-		this.routingTable = routingTable;
-		this.port = port;
+	public PortsListener(Router router) {
+		this.router = router;
 		this.processRequestsThreadPool = Executors.newCachedThreadPool();
 		this.channelPendingData = new ConcurrentHashMap<>();
+		this.toWriteQueue = new ConcurrentLinkedQueue<>();
 	}
 
-	@Override
-	public void run() {
-
-		ServerSocketChannel serverSocketChannel = null;
+	public void startListening(List<Integer> ports) {
 		try {
-			configureServerSocket(serverSocketChannel);
+			this.selector = Selector.open();
+			for (int port : ports) {
+				configureServerSocket(port);
+			}
+			Logger.INFO("Listening for connections on ports: " + ports);
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			return;
@@ -41,38 +48,33 @@ public class PortThread implements Runnable {
 
 		while (true) {
 			try {
-				System.out.print("\nWaiting for incoming keys... ");
 				selector.select();
-			} catch (IOException e) {
+				while (!toWriteQueue.isEmpty()) {
+					toWriteQueue.poll().register(selector, SelectionKey.OP_WRITE);
+				}
+			} catch (Exception e) {
 				System.err.println(e.getMessage());
 				continue;
 			}
-
 			var keys = selector.selectedKeys();
 			var keysIterator = keys.iterator();
 			while (keysIterator.hasNext()) {
 				var key = keysIterator.next();
 				keysIterator.remove();
 				handleKey(key);
-				System.out.println("\nKey handled: " + key);
 			}
 		}
-		
 	}
 
 	private void handleKey(SelectionKey key) {
 
-		if (!key.isValid()) {
-			return;
-		}
-
-		if (key.isAcceptable()) {
+		if (key.isValid() && key.isAcceptable()) {
 			accept(key);
 		}
-		if (key.isReadable()) {
+		if (key.isValid() && key.isReadable()) {
 			read(key);
 		}
-		if (key.isWritable()) {
+		if (key.isValid() && key.isWritable()) {
 			write(key);
 		}
 	}
@@ -110,29 +112,49 @@ public class PortThread implements Runnable {
 			ByteBuffer buffer = ByteBuffer.allocateDirect(512);
 			int bytesRead = channel.read(buffer);
 			if (bytesRead == -1) {
-				channel.close();
-				routingTable.unregisterRoute(channel);
+				router.removeRoute(channel);
 				channelPendingData.remove(channel);
-				System.out.println("DISCONNECTED"); //! DEV ONLY
+				Logger.INFO("Connection closed for: " + channel.getRemoteAddress());
+				Logger.INFO("Routing table:\n" + router.getRoutingTable());
+				channel.close();
 			} else {
-				//TODO Implement request processing
-				// processRequestsThreadPool.submit(null);
+				Logger.INFO("Received message from: " + channel.getRemoteAddress());
+				buffer.flip();
+				processRequestsThreadPool.submit(() -> process(channel, buffer, this));
 			}
 		} catch (IOException e) {
 			System.err.println(e.getMessage());
 		}
 	}
 
+	private void process(SocketChannel channel, ByteBuffer buffer, PortsListener portsListener) {
+
+		ForwardRequestHandler validateChecksum = new ValidateChecksum();
+		ForwardRequestHandler identifyDestination = new IdentifyDestination();
+		ForwardRequestHandler ForwardRequest = new ForwardRequest();
+		validateChecksum.setNextHandler(identifyDestination);
+		identifyDestination.setNextHandler(ForwardRequest);
+
+		var request = new FixRequest(buffer);
+		try {
+			validateChecksum.handleRequest(channel, request, portsListener);
+		} catch (Exception e) {
+			buffer = ByteBuffer.wrap((e.getMessage() + "\n").getBytes());
+			portsListener.addToWriteQueue(channel);
+			portsListener.addToPendingData(channel, buffer);
+		}
+		selector.wakeup();
+	}
+
 	private void accept(SelectionKey key) {
 
 		ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
 		try {
-			System.out.println("CONNECTED"); //! DEV ONLY
 			SocketChannel newConnectionChannel = serverSocketChannel.accept();
 			newConnectionChannel.configureBlocking(false);
 			newConnectionChannel.register(selector, SelectionKey.OP_WRITE);
-			var assignedId = Router.getAndIncrementId();
-			routingTable.registerRoute(assignedId, newConnectionChannel);
+			var assignedId = router.getNewId();
+			router.addRoute(assignedId, newConnectionChannel);
 			channelPendingData.put(newConnectionChannel, new ConcurrentLinkedDeque<>());
 			
 			var buffer = ByteBuffer.wrap(String.format(
@@ -143,18 +165,30 @@ public class PortThread implements Runnable {
 			).getBytes());
 			var pendingDataQueue = channelPendingData.get(newConnectionChannel);
 			pendingDataQueue.add(buffer);
-
+			Logger.INFO("New connection from " + newConnectionChannel.getRemoteAddress());
+			Logger.INFO("Routing table:\n" + router.getRoutingTable());
 		} catch (IOException e) {
 			System.err.println(e.getMessage());
 		}
 	}
 
-	private void configureServerSocket(ServerSocketChannel ssc) throws IOException {
-		ssc = ServerSocketChannel.open();
+	private void configureServerSocket(int port) throws IOException {
+		ServerSocketChannel ssc = ServerSocketChannel.open();
 		ssc.configureBlocking(false);
-		ssc.bind(new InetSocketAddress("localhost", this.port));
-		selector = Selector.open();
+		ssc.bind(new InetSocketAddress("localhost", port));
 		ssc.register(selector, SelectionKey.OP_ACCEPT);
 	}
-	
+
+	public void addToWriteQueue(SocketChannel channel) {
+		toWriteQueue.add(channel);
+	}
+
+	public void addToPendingData(SocketChannel channel, ByteBuffer buffer) {
+		var pendingDataQueue = channelPendingData.get(channel);
+		pendingDataQueue.add(buffer);
+	}
+
+	public SocketChannel fetchFromRoutingTable(int id) {
+		return router.getRoute(id);
+	}
 }

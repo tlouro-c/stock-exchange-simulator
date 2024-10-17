@@ -1,2 +1,5 @@
 **/target/
 *.drawio
+demo_messages.txt
+generate_message.py
+fix_fields.txt

@@ -7,12 +7,12 @@ import java.nio.ByteBuffer;
 
 import org.junit.jupiter.api.Test;
 
+import tc.tlouro_c.stock_exchange_simulator.FixRequest;
+
 
 public class ValidateChecksumTest {
 	@Test
 	public void testValidateChecksum() throws Exception {
-
-		var validator = new ValidateChecksum();
 
 		String[] validRequests = {
 			"8=FIX.4.29=7435=A34=97849=TESTSELL352=20190206-16:29:19.20856=TESTBUY398=0108=6010=137",
@@ -30,13 +30,17 @@ public class ValidateChecksumTest {
 
 
 		for (String validRequest : validRequests) {
+			var request = new FixRequest(ByteBuffer.wrap(validRequest.getBytes()));
+			request.parse();
 			assertDoesNotThrow(() -> 
-			validator.validateChecksum(ByteBuffer.wrap(validRequest.getBytes())));
+			request.validateChecksum());
 		}
 
 		for (String invalidRequest : invalidRequests) {
+			var request = new FixRequest(ByteBuffer.wrap(invalidRequest.getBytes()));
+			request.parse();
 			assertThrows(Exception.class, () -> 
-			validator.validateChecksum(ByteBuffer.wrap(invalidRequest.getBytes())));
+			request.validateChecksum());
 		}
 
 	}
