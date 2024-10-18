@@ -9,8 +9,9 @@ public abstract class ForwardRequestHandler {
 
 	protected ForwardRequestHandler nextHandler;
 
-	public void setNextHandler(ForwardRequestHandler nextHandler) {
+	public ForwardRequestHandler setNextHandler(ForwardRequestHandler nextHandler) {
 		this.nextHandler = nextHandler;
+		return this;
 	}
 
 	public abstract void handleRequest(SocketChannel channel, FixRequest request,

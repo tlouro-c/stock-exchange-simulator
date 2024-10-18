@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 
 import tc.tlouro_c.stock_exchange_simulator.FixRequest;
 
-
 public class ValidateChecksumTest {
 	@Test
 	public void testValidateChecksum() throws Exception {

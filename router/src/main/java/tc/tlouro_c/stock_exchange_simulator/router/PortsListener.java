@@ -129,15 +129,13 @@ public class PortsListener {
 
 	private void process(SocketChannel channel, ByteBuffer buffer, PortsListener portsListener) {
 
-		ForwardRequestHandler validateChecksum = new ValidateChecksum();
-		ForwardRequestHandler identifyDestination = new IdentifyDestination();
-		ForwardRequestHandler ForwardRequest = new ForwardRequest();
-		validateChecksum.setNextHandler(identifyDestination);
-		identifyDestination.setNextHandler(ForwardRequest);
+		var requestProcessingChain = new ValidateChecksum()
+					.setNextHandler(new IdentifyDestination())
+					.setNextHandler(new ForwardRequest());
 
 		var request = new FixRequest(buffer);
 		try {
-			validateChecksum.handleRequest(channel, request, portsListener);
+			requestProcessingChain.handleRequest(channel, request, portsListener);
 		} catch (Exception e) {
 			buffer = ByteBuffer.wrap((e.getMessage() + "\n").getBytes());
 			portsListener.addToWriteQueue(channel);
