@@ -27,13 +27,14 @@ public class StockDAO {
 	}
 
 	public void initializeTable() {
-
+		
+		
 		try (Connection conn = databaseConnectionProvider.getConnection();
 			Statement stmt = conn.createStatement()) {
-
+			
 			String sql = "CREATE TABLE IF NOT EXISTS stocks ("
 					+ "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-					+ "symbol TEXT NOT NULL,"
+					+ "symbol TEXT NOT NULL UNIQUE,"
 					+ "quantity INTEGER NOT NULL,"
 					+ "price REAL NOT NULL,"
 					+ ");";
@@ -42,6 +43,25 @@ public class StockDAO {
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 		}
+	}
+
+	public Stock fetchStock(String symbol) {
+
+		Stock stock = null;
+		try (Connection conn = databaseConnectionProvider.getConnection();
+			Statement stmt = conn.createStatement()) {
+			
+			String sql = "SELECT symbol, quantity, price FROM stocks WHERE symbol = '" + symbol + "'"; 
+			var rs = stmt.executeQuery(sql);
+			if (rs.first()) {
+				stock = new Stock(rs.getString("symbol"),
+								rs.getInt("quantity"),
+								rs.getDouble("price"));
+			}
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return stock;
 	}
 	
 }

@@ -3,8 +3,14 @@ package tc.tlouro_c.stock_exchange_simulator.stocks;
 public class Stock {
 
 	private String symbol;
-	private int availableQuantity;
 	private double currentPrice;
+	private int availableQuantity;
+
+	public Stock(String symbol, int availableQuantity, double currentPrice) {
+		this.symbol = symbol;
+		this.availableQuantity = availableQuantity;
+		this.currentPrice = currentPrice;
+	}
 
 	public String getSymbol() {
 		return symbol;
@@ -25,5 +31,9 @@ public class Stock {
 		this.currentPrice = currentPrice;
 	}
 	
+	@Override
+	public String toString() {
+		return "Stock [symbol=" + symbol + ", availableQuantity=" + availableQuantity + ", currentPrice=" + currentPrice + "]";
+	}
 
 }
