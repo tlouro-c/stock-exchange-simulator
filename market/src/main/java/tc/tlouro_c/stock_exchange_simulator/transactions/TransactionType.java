@@ -1,7 +1,7 @@
 package tc.tlouro_c.stock_exchange_simulator.transactions;
 
 public enum TransactionType {
-	BUY(1), SELL(2);
+	INVALID(0), BUY(1), SELL(2);
 
 	private int value;
 
@@ -19,7 +19,7 @@ public enum TransactionType {
 		} else if (value == 2) {
 			return SELL;
 		} else {
-			return null;
+			return INVALID;
 		}
 	}
 }

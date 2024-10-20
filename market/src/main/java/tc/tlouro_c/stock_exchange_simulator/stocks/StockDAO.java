@@ -78,9 +78,9 @@ public class StockDAO {
 		try (Connection conn = databaseConnectionProvider.getConnection();
 			Statement stmt = conn.createStatement()) {
 			
-			String sql = "SELECT symbol, shares, price FROM stocks WHERE symbol = '" + symbol + "'"; 
+			String sql = "SELECT symbol, shares, price, version FROM stocks WHERE symbol = '" + symbol + "'"; 
 			var rs = stmt.executeQuery(sql);
-			if (rs.first()) {
+			if (rs.next()) {
 				stock = new Stock(rs.getString("symbol"),
 								rs.getInt("shares"),
 								rs.getDouble("price"),

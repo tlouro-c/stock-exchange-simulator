@@ -42,32 +42,25 @@ public class TransactionService {
 	}
 
 	public void handleTransaction(MarketController marketController, ByteBuffer buffer) {
+		marketController.getMarketView().processingTransactionMessage();
 		var originalFixRequest = new FixRequest(buffer);
 		var transactionProcessChain = buildTransactionProcessChain();
 		Transaction transaction = null;
-
-		System.out.println("Starting transaction processing chain");
 		
 		try {
 			transactionProcessChain.handleTransaction(null, originalFixRequest);
 		} catch (TransactionRejectedException e) {
-			e.printStackTrace();
-			System.out.println("Transaction processing chain finished : transaction rejected");
 			transaction = e.getTransaction();
-			System.out.println(transaction != null ? transaction.toString() : "Transaction is null");
 			transaction.setTransactionState(TransactionState.REJECTED);
 		} catch (TransactionAcceptedException e) {
-			System.out.println(e.getMessage());
-			System.out.println("Transaction processing chain finished : transaction accepted");
 			transaction = e.getTransaction();
-			System.out.println(transaction != null ? transaction.toString() : "Transaction is null");
 			transaction.setTransactionState(TransactionState.EXECUTED);
 		}
-		System.out.println("Starting after transaction processing chain");
 		var afterTransactionProcessChain = buildAfterTransactionProcessChain();
 		try {
 			afterTransactionProcessChain.handleTransaction(transaction, marketController);
 			marketController.increaseTransactionsCount();
+			marketController.getMarketView().transactionProcessedMessage(transaction.getTransactionState());
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		}

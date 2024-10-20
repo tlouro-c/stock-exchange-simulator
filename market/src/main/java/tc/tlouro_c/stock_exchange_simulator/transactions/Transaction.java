@@ -33,6 +33,19 @@ public class Transaction {
 	private double total;
 	private LocalDateTime transactionDate;
 	private TransactionState transactionState;
+	
+	Transaction(String broker, String market,
+				String stockSymbol, int sharesAmount, double pricePerShare, 
+				TransactionType transactionType, TransactionState transactionState) {
+		this.broker = broker;
+		this.market = market;
+		this.stockSymbol = stockSymbol;
+		this.sharesAmount = sharesAmount;
+		this.pricePerShare = pricePerShare;
+		this.transactionType = transactionType;
+		this.transactionState = transactionState;
+		this.transactionDate = LocalDateTime.now();
+	}
 
 	public static Transaction fromFix(FixRequest fixRequest) {
 		var transactionBuilder = new TransactionBuilder();
@@ -53,6 +66,7 @@ public class Transaction {
 		var fixRequest = new FixRequest();
 
 		fixRequest.setSenderId(transaction.market);
+		fixRequest.setMarketId(transaction.market);
 		fixRequest.setTargetId(transaction.broker);
 		fixRequest.setInstrument(transaction.stockSymbol);
 		fixRequest.setOrderType(String.valueOf(transaction.transactionType.getValue()));
@@ -61,19 +75,6 @@ public class Transaction {
 		fixRequest.setState(String.valueOf(transaction.transactionState.getValue()));
 
 		return fixRequest;
-	}
-
-	Transaction(String broker, String market,
-				String stockSymbol, int sharesAmount, double pricePerShare, 
-				TransactionType transactionType, TransactionState transactionState) {
-		this.broker = broker;
-		this.market = market;
-		this.stockSymbol = stockSymbol;
-		this.sharesAmount = sharesAmount;
-		this.pricePerShare = pricePerShare;
-		this.transactionType = transactionType;
-		this.transactionState = transactionState;
-		this.transactionDate = LocalDateTime.now();
 	}
 
 	public boolean isProcessed() {

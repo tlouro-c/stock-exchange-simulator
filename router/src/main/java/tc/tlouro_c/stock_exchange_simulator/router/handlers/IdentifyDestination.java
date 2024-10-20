@@ -27,9 +27,9 @@ public class IdentifyDestination extends ForwardRequestHandler {
 		}
 	}
 
-	private class InvalidDestinationException extends Exception {
+	public class InvalidDestinationException extends Exception {
 
-		private InvalidDestinationException() {
+		public InvalidDestinationException() {
 			super("Invalid destination");
 		}
 	}

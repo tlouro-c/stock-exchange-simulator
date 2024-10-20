@@ -100,7 +100,6 @@ public class MarketController {
 					retrieveAssignedId(buffer);
 					transactionsService.init();
 				} else {
-					System.out.println("Processing...");
 					processRequestsThreadPool.submit(() -> 
 						transactionsService.handleTransaction(this, buffer));
 				}
@@ -153,5 +152,9 @@ public class MarketController {
 
 	public void increaseTransactionsCount() {
 		transactionsCount++;
+	}
+
+	public MarketView getMarketView() {
+		return marketView;
 	}
 }

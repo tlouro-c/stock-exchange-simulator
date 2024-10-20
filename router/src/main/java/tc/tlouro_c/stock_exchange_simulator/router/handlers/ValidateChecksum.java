@@ -4,18 +4,21 @@ import java.nio.channels.SocketChannel;
 
 import tc.tlouro_c.stock_exchange_simulator.FixRequest;
 import tc.tlouro_c.stock_exchange_simulator.router.RouterController;
+import tc.tlouro_c.stock_exchange_simulator.router.handlers.IdentifyDestination.InvalidDestinationException;
 import tc.tlouro_c.utils.Logger;
 
 public class ValidateChecksum extends ForwardRequestHandler {
 
 	@Override
 	public void handleRequest(SocketChannel channel, FixRequest request,
-		RouterController routerController) throws FixRequest.InvalidChecksumException {
+		RouterController routerController) throws FixRequest.InvalidChecksumException, InvalidDestinationException {
 
 		try {
 			request.parse();
 			request.validateChecksum();
 			nextHandler.handleRequest(channel, request, routerController);
+		} catch (InvalidDestinationException e) {
+			throw e;
 		} catch (Exception e) {
 			try {
 				Logger.WARNING("Checksum validation failed for message from " + channel.getRemoteAddress());
