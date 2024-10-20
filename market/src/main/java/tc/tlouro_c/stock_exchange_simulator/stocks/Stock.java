@@ -3,13 +3,15 @@ package tc.tlouro_c.stock_exchange_simulator.stocks;
 public class Stock {
 
 	private String symbol;
-	private double currentPrice;
-	private int availableQuantity;
+	private double price;
+	private int shares;
+	private int version;
 
-	public Stock(String symbol, int availableQuantity, double currentPrice) {
+	public Stock(String symbol, int availableShares, double price, int version) {
 		this.symbol = symbol;
-		this.availableQuantity = availableQuantity;
-		this.currentPrice = currentPrice;
+		this.shares = availableShares;
+		this.price = price;
+		this.version = version;
 	}
 
 	public String getSymbol() {
@@ -18,22 +20,28 @@ public class Stock {
 	public void setSymbol(String symbol) {
 		this.symbol = symbol;
 	}
-	public int getAvailableQuantity() {
-		return availableQuantity;
+	public int getShares() {
+		return shares;
 	}
-	public void setAvailableQuantity(int availableQuantity) {
-		this.availableQuantity = availableQuantity;
+	public void setShares(int shares) {
+		this.shares = shares;
 	}
-	public double getCurrentPrice() {
-		return currentPrice;
+	public double getPrice() {
+		return price;
 	}
-	public void setCurrentPrice(double currentPrice) {
-		this.currentPrice = currentPrice;
+	public void setPrice(double price) {
+		this.price = price;
+	}
+	public int getVersion() {
+		return version;
+	}
+	public void setVersion(int version) {
+		this.version = version;
 	}
 	
 	@Override
 	public String toString() {
-		return "Stock [symbol=" + symbol + ", availableQuantity=" + availableQuantity + ", currentPrice=" + currentPrice + "]";
+		return "Stock [symbol=" + symbol + ", price=" + price + ", shares=" + shares + ", version=" + version + "]";
 	}
 
 }

@@ -28,8 +28,8 @@ public class RoutingTable extends ConcurrentHashMap<Integer, SocketChannel> {
 		for (var entry : this.entrySet()) {
 			result += entry.getKey() + " -> ";
 			try {
-				var channelLocalAddress = entry.getValue().getLocalAddress();
-				result += channelLocalAddress == null ? "unbound" : channelLocalAddress + "\n";
+				var channelRemoteAddress = entry.getValue().getRemoteAddress();
+				result += channelRemoteAddress == null ? "unbound" : channelRemoteAddress + "\n";
 			} catch (Exception e) {
 				result += "closed\n";
 			}

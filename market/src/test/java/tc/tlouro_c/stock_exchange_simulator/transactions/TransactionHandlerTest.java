@@ -1,7 +1,6 @@
 package tc.tlouro_c.stock_exchange_simulator.transactions;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
 
 import org.junit.jupiter.api.Test;
 
@@ -9,14 +8,9 @@ public class TransactionHandlerTest {
 	@Test
 	void testBuildChain() {
 
-		List<Integer> list = Arrays.asList(1, 2, 4);
+		HashMap<String, String> map = new HashMap<>();
 
-		var listIt = list.iterator();
-		while (listIt.hasNext()) {
-			System.out.println(listIt.next());
-		}
-
-		System.out.println(list.iterator().next());
+		System.out.println(map.get("key"));
 
 	}
 }

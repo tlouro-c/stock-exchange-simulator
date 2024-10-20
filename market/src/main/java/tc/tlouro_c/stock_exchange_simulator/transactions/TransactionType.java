@@ -12,4 +12,14 @@ public enum TransactionType {
 	public int getValue() {
 		return value;
 	}
+
+	public static TransactionType valueOf(int value) {
+		if (value == 1) {
+			return BUY;
+		} else if (value == 2) {
+			return SELL;
+		} else {
+			return null;
+		}
+	}
 }

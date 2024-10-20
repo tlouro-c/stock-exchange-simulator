@@ -2,16 +2,19 @@ package tc.tlouro_c.stock_exchange_simulator.stocks;
 
 import org.junit.jupiter.api.Test;
 
-public class StockDataProviderTest {
+import tc.tlouro_c.stock_exchange_simulator.stocks.StockDAO.StockVersionConflictException;
+
+public class StockDataProviderTest  {
 	@Test
-	void testGetInstance() {
-		var stockProvider = StockInfoProvider.getInstance();
+	void testGetInstance() throws StockVersionConflictException {
+		var stockDAO = StockDAO.getInstance();
 
-		
-		System.out.println(stockProvider.fetchLiveStockPrice("AAPL"));
-		System.out.println(stockProvider.fetchLiveStockPrice("GOOG"));
-		System.out.println(stockProvider.fetchLiveStockPrice("IBM"));
+		// stockDAO.initializeTable();
+		// stockDAO.populateTable();
 
+		var stock = new Stock("AAPL", 10000, 235, 1);
+
+		stockDAO.updateStock(stock);
 
 	}
 }

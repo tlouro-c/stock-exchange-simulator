@@ -3,9 +3,12 @@ package tc.tlouro_c.stock_exchange_simulator.transactions;
 import java.time.LocalDateTime;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.PastOrPresent;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
+
+import tc.tlouro_c.stock_exchange_simulator.FixRequest;
+import tc.tlouro_c.stock_exchange_simulator.Market;
 
 public class Transaction {
 
@@ -13,17 +16,65 @@ public class Transaction {
 	private String stockSymbol;
 
 	@Positive
-	private int quantity;
+	private int sharesAmount;
 
 	@PositiveOrZero
 	private double pricePerShare;
 
-	@PastOrPresent
-	private LocalDateTime transactionDate;
+	@NotBlank
+	private String broker;
+
+	@NotBlank
+	private String market;
+
+	@NotNull
+	private TransactionType transactionType;
 
 	private double total;
-	private TransactionType transactionType;
+	private LocalDateTime transactionDate;
 	private TransactionState transactionState;
+
+	public static Transaction fromFix(FixRequest fixRequest) {
+		var transactionBuilder = new TransactionBuilder();
+
+		transactionBuilder.market(Market.getId())
+						.broker(fixRequest.getSenderId())
+						.stockSymbol(fixRequest.getInstrument())
+						.sharesAmount(fixRequest.getSharesAmount())
+						.pricePerShare(fixRequest.getPricePerShare())
+						.transactionType(TransactionType.valueOf(fixRequest.getOrderType()))
+						.transactionState(TransactionState.NEW);
+		
+		return transactionBuilder.build();
+	}
+
+	public static FixRequest toFix(Transaction transaction) {
+
+		var fixRequest = new FixRequest();
+
+		fixRequest.setSenderId(transaction.market);
+		fixRequest.setTargetId(transaction.broker);
+		fixRequest.setInstrument(transaction.stockSymbol);
+		fixRequest.setOrderType(String.valueOf(transaction.transactionType.getValue()));
+		fixRequest.setPricePerShare(transaction.pricePerShare);
+		fixRequest.setSharesAmount(transaction.sharesAmount);
+		fixRequest.setState(String.valueOf(transaction.transactionState.getValue()));
+
+		return fixRequest;
+	}
+
+	Transaction(String broker, String market,
+				String stockSymbol, int sharesAmount, double pricePerShare, 
+				TransactionType transactionType, TransactionState transactionState) {
+		this.broker = broker;
+		this.market = market;
+		this.stockSymbol = stockSymbol;
+		this.sharesAmount = sharesAmount;
+		this.pricePerShare = pricePerShare;
+		this.transactionType = transactionType;
+		this.transactionState = transactionState;
+		this.transactionDate = LocalDateTime.now();
+	}
 
 	public boolean isProcessed() {
 		return transactionState != TransactionState.NEW;
@@ -37,13 +88,13 @@ public class Transaction {
 		this.stockSymbol = stockSymbol;
 	}
 
-	public int getQuantity() {
-		return quantity;
+	public int getSharesAmount() {
+		return sharesAmount;
 	}
 
-	public void setQuantity(int quantity) {
-		this.quantity = quantity;
-		total = quantity * pricePerShare;
+	public void setSharesAmount(int sharesAmount) {
+		this.sharesAmount = sharesAmount;
+		total = sharesAmount * pricePerShare;
 	}
 
 	public double getPricePerShare() {
@@ -52,7 +103,7 @@ public class Transaction {
 
 	public void setPricePerShare(double pricePerShare) {
 		this.pricePerShare = pricePerShare;
-		total = quantity * pricePerShare;
+		total = sharesAmount * pricePerShare;
 	}
 
 	public LocalDateTime getTransactionDate() {
@@ -86,5 +137,20 @@ public class Transaction {
 	public void setTransactionState(TransactionState transactionState) {
 		this.transactionState = transactionState;
 	}
-	
+
+	public String getBroker() {
+		return broker;
+	}
+
+	public void setBroker(String broker) {
+		this.broker = broker;
+	}
+
+	public String getMarket() {
+		return market;
+	}
+
+	public void setMarket(String market) {
+		this.market = market;
+	}
 }

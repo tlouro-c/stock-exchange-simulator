@@ -19,7 +19,7 @@ import tc.tlouro_c.stock_exchange_simulator.FixRequest;
 import tc.tlouro_c.stock_exchange_simulator.router.handlers.*;
 import tc.tlouro_c.utils.Logger;
 
-public class PortsListener {
+public class RouterController {
 
 	private Router router;
 	private ConcurrentHashMap<SocketChannel, ConcurrentLinkedDeque<ByteBuffer>> channelPendingData;
@@ -27,7 +27,7 @@ public class PortsListener {
 	private ExecutorService processRequestsThreadPool;
 	private Selector selector;
 
-	public PortsListener(Router router) {
+	public RouterController(Router router) {
 		this.router = router;
 		this.processRequestsThreadPool = Executors.newCachedThreadPool();
 		this.channelPendingData = new ConcurrentHashMap<>();
@@ -35,6 +35,7 @@ public class PortsListener {
 	}
 
 	public void startListening(List<Integer> ports) {
+		Logger.INFO("Router started");
 		try {
 			this.selector = Selector.open();
 			for (int port : ports) {
@@ -68,13 +69,15 @@ public class PortsListener {
 
 	private void handleKey(SelectionKey key) {
 
-		if (key.isValid() && key.isAcceptable()) {
+		if (!key.isValid()) {
+			return;
+		}
+
+		if (key.isAcceptable()) {
 			accept(key);
-		}
-		if (key.isValid() && key.isReadable()) {
+		} else if (key.isReadable()) {
 			read(key);
-		}
-		if (key.isValid() && key.isWritable()) {
+		} else if (key.isWritable()) {
 			write(key);
 		}
 	}
@@ -109,7 +112,7 @@ public class PortsListener {
 
 		SocketChannel channel = (SocketChannel) key.channel();
 		try {
-			ByteBuffer buffer = ByteBuffer.allocateDirect(512);
+			ByteBuffer buffer = ByteBuffer.allocateDirect(128);
 			int bytesRead = channel.read(buffer);
 			if (bytesRead == -1) {
 				router.removeRoute(channel);
@@ -127,19 +130,22 @@ public class PortsListener {
 		}
 	}
 
-	private void process(SocketChannel channel, ByteBuffer buffer, PortsListener portsListener) {
+	private void process(SocketChannel channel, ByteBuffer buffer, RouterController routerController) {
 
-		var requestProcessingChain = new ValidateChecksum()
-					.setNextHandler(new IdentifyDestination())
-					.setNextHandler(new ForwardRequest());
+		var validateChecksum = new ValidateChecksum();
+		var IdentifyDestination = new IdentifyDestination();
+		var ForwardRequest = new ForwardRequest();
+		validateChecksum.setNextHandler(IdentifyDestination);
+		IdentifyDestination.setNextHandler(ForwardRequest);
+		var requestProcessingChain = validateChecksum;
 
 		var request = new FixRequest(buffer);
 		try {
-			requestProcessingChain.handleRequest(channel, request, portsListener);
+			requestProcessingChain.handleRequest(channel, request, routerController);
 		} catch (Exception e) {
 			buffer = ByteBuffer.wrap((e.getMessage() + "\n").getBytes());
-			portsListener.addToWriteQueue(channel);
-			portsListener.addToPendingData(channel, buffer);
+			routerController.addToWriteQueue(channel);
+			routerController.addToPendingData(channel, buffer);
 		}
 		selector.wakeup();
 	}
@@ -156,7 +162,6 @@ public class PortsListener {
 			channelPendingData.put(newConnectionChannel, new ConcurrentLinkedDeque<>());
 			
 			var buffer = ByteBuffer.wrap(String.format(
-				"You have been successfully connected.\n" + 
 				"Assigned ID: %d\n" +
 				"Use this ID for further communication.\n", 
 				assignedId

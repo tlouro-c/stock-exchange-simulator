@@ -5,23 +5,20 @@ import java.util.Arrays;
 import java.util.List;
 import java.nio.channels.SocketChannel;
 
-import tc.tlouro_c.utils.Logger;
-
 public class Router {
 
-	private final PortsListener portsListener;
+	private final RouterController routerController;
 	private final RoutingTable routingTable;
 	private List<Integer> idsGenerated;
 
 	private Router() {
-		this.portsListener = new PortsListener(this);
+		this.routerController = new RouterController(this);
 		this.routingTable = new RoutingTable();
 		this.idsGenerated = new ArrayList<>();
 	}
 
 	private void start(List<Integer> ports) {
-		Logger.INFO("Router started");
-		portsListener.startListening(ports);
+		routerController.startListening(ports);
 	}
 
 	public int getNewId() {

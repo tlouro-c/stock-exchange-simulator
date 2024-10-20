@@ -1,9 +1,5 @@
 package tc.tlouro_c.stock_exchange_simulator;
 
-import java.sql.SQLException;
-
-import tc.tlouro_c.stock_exchange_simulator.utils.DatabaseConnectionProvider;
-
 public class Market {
 
 	private static String id = "undefined";
@@ -17,11 +13,8 @@ public class Market {
 	}
 
     public static void main(String[] args) {
-        var databaseConnectionProvider = DatabaseConnectionProvider.getInstance();
-		try {
-			databaseConnectionProvider.getConnection();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+        var marketController = new MarketController();
+
+		marketController.startListening(8001);
     }
 }

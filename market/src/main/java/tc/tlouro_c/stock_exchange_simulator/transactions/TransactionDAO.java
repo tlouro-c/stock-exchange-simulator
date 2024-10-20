@@ -38,7 +38,7 @@ public class TransactionDAO {
 					+ "type TEXT NOT NULL,"
 					+ "state TEXT NOT NULL,"
 					+ "symbol TEXT NOT NULL,"
-					+ "quantity INTEGER NOT NULL,"
+					+ "shares INTEGER NOT NULL,"
 					+ "price_per_share REAL NOT NULL,"
 					+ "total REAL NOT NULL,"
 					+ "date TEXT NOT NULL"
@@ -60,7 +60,7 @@ public class TransactionDAO {
 		long id = -1;
 		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		String sql = "INSERT INTO transactions"
-					+ "(type, state, symbol, quantity, price_per_share, total, date)"
+					+ "(type, state, symbol, shares, price_per_share, total, date)"
 					+ "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
 		try (Connection conn = databaseConnectionProvider.getConnection();
@@ -69,7 +69,7 @@ public class TransactionDAO {
 			pstmt.setString(1, transaction.getTransactionType().name());
 			pstmt.setString(2, transaction.getTransactionState().name());
 			pstmt.setString(3, transaction.getStockSymbol());
-			pstmt.setInt(4, transaction.getQuantity());
+			pstmt.setInt(4, transaction.getSharesAmount());
 			pstmt.setDouble(5, transaction.getPricePerShare());
 			pstmt.setDouble(6, transaction.getTotal());
 			pstmt.setString(7, transaction.getTransactionDate().format(dateFormatter));

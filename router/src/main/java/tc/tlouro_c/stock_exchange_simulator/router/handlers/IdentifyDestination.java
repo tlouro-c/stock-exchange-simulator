@@ -3,22 +3,22 @@ package tc.tlouro_c.stock_exchange_simulator.router.handlers;
 import java.nio.channels.SocketChannel;
 
 import tc.tlouro_c.stock_exchange_simulator.FixRequest;
-import tc.tlouro_c.stock_exchange_simulator.router.PortsListener;
+import tc.tlouro_c.stock_exchange_simulator.router.RouterController;
 import tc.tlouro_c.utils.Logger;
 
 public class IdentifyDestination extends ForwardRequestHandler {
 
 	@Override
 	public void handleRequest(SocketChannel channel, FixRequest request,
-		PortsListener portsListener) throws InvalidDestinationException {
+		RouterController routerController) throws InvalidDestinationException {
 		
 		try {
-			var targetChannel = portsListener.fetchFromRoutingTable(
+			var targetChannel = routerController.fetchFromRoutingTable(
 									Integer.parseInt(request.getTargetId()));
 			if (targetChannel == null) {
 				throw new InvalidDestinationException();
 			}
-			nextHandler.handleRequest(targetChannel, request, portsListener);
+			nextHandler.handleRequest(targetChannel, request, routerController);
 		} catch (Exception e) {
 			try {
 				Logger.WARNING("Invalid destination for message from " + channel.getRemoteAddress());
