@@ -152,6 +152,18 @@ public class FixRequest {
 		map.put("39", state);
 	}
 
+	public void setClientOrderId(int clientOrderId) {
+		map.put("11", String.valueOf(clientOrderId));
+	}
+
+	public int getClientOrderId() {
+		try {
+			return Integer.parseInt(map.get("11"));
+		} catch (Exception e) {
+			return 0;
+		}
+	}
+
 	public void printMap() {
 		map.forEach((k, v) -> System.out.println(k + "=" + v));
 	}

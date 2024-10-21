@@ -1,26 +1,17 @@
 package tc.tlouro_c.stock_exchange_simulator.transaction;
 
+import java.nio.ByteBuffer;
+
 import org.junit.jupiter.api.Test;
-
-import tc.tlouro_c.stock_exchange_simulator.transactions.Transaction;
-import tc.tlouro_c.stock_exchange_simulator.transactions.TransactionBuilder;
-
 
 public class TransactionTypeTest {
 	@Test
 	void testValueOf() {
-		var transaction = new TransactionBuilder().build();
 
-		alterStr(transaction);
+		var tmpBuffer = ByteBuffer.wrap("Hello World".getBytes());
 
-		System.out.println(transaction);
-
-	}
-
-	void alterStr(Transaction transaction) {
-		transaction = new TransactionBuilder().build();
-		System.out.println(transaction);
-		transaction.setPricePerShare(10);
+		System.out.println(new String(tmpBuffer.array()));
+		
 	}
 
 }

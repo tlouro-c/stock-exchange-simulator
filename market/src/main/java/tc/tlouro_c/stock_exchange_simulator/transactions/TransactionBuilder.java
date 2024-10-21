@@ -9,6 +9,7 @@ public class TransactionBuilder {
 	private TransactionState transactionState;
 	private String broker;
 	private String market;
+	private int clientOrderId;
 
 	public TransactionBuilder stockSymbol(String stockSymbol) {
 		this.stockSymbol = stockSymbol;
@@ -38,9 +39,13 @@ public class TransactionBuilder {
 		this.market = market;
 		return this;
 	}
+	public TransactionBuilder clientOrderId(int clientOrderId) {
+		this.clientOrderId = clientOrderId;
+		return this;
+	}
 
 	public Transaction build() {
-		return new Transaction(broker, market, stockSymbol, 
+		return new Transaction(broker, market, clientOrderId, stockSymbol, 
 			sharesAmount, pricePerShare, transactionType, transactionState);
 	}
 	

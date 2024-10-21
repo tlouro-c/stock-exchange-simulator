@@ -33,12 +33,14 @@ public class Transaction {
 	private double total;
 	private LocalDateTime transactionDate;
 	private TransactionState transactionState;
+	private int clientOrderId;
 	
-	Transaction(String broker, String market,
+	Transaction(String broker, String market, int clientOrderId,
 				String stockSymbol, int sharesAmount, double pricePerShare, 
 				TransactionType transactionType, TransactionState transactionState) {
 		this.broker = broker;
 		this.market = market;
+		this.clientOrderId = clientOrderId;
 		this.stockSymbol = stockSymbol;
 		this.sharesAmount = sharesAmount;
 		this.pricePerShare = pricePerShare;
@@ -52,6 +54,7 @@ public class Transaction {
 
 		transactionBuilder.market(Market.getId())
 						.broker(fixRequest.getSenderId())
+						.clientOrderId(fixRequest.getClientOrderId())
 						.stockSymbol(fixRequest.getInstrument())
 						.sharesAmount(fixRequest.getSharesAmount())
 						.pricePerShare(fixRequest.getPricePerShare())
@@ -67,6 +70,7 @@ public class Transaction {
 
 		fixRequest.setSenderId(transaction.market);
 		fixRequest.setMarketId(transaction.market);
+		fixRequest.setClientOrderId(transaction.clientOrderId);
 		fixRequest.setTargetId(transaction.broker);
 		fixRequest.setInstrument(transaction.stockSymbol);
 		fixRequest.setOrderType(String.valueOf(transaction.transactionType.getValue()));
@@ -154,4 +158,13 @@ public class Transaction {
 	public void setMarket(String market) {
 		this.market = market;
 	}
+
+	public int getClientOrderId() {
+		return clientOrderId;
+	}
+
+	public void setClientOrderId(int clientOrderId) {
+		this.clientOrderId = clientOrderId;
+	}
+
 }

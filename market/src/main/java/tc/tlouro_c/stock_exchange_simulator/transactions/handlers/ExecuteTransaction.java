@@ -4,6 +4,7 @@ import tc.tlouro_c.stock_exchange_simulator.stocks.Stock;
 import tc.tlouro_c.stock_exchange_simulator.stocks.StockDAO;
 import tc.tlouro_c.stock_exchange_simulator.stocks.StockDAO.StockVersionConflictException;
 import tc.tlouro_c.stock_exchange_simulator.transactions.Transaction;
+import tc.tlouro_c.stock_exchange_simulator.transactions.TransactionType;
 
 public class ExecuteTransaction extends TransactionHandler {
 
@@ -16,9 +17,15 @@ public class ExecuteTransaction extends TransactionHandler {
 		try {
 			var stockDAO = StockDAO.getInstance();
 			var stockData = (Stock) extra;
+			boolean buyOrder = transaction.getTransactionType() == TransactionType.BUY;
 			var pricePerShare = stockData.getPrice();
-			stockData.setShares(stockData.getShares() - transaction.getSharesAmount());
-			stockData.setPrice(pricePerShare + 0.005);
+			if (buyOrder) {
+				stockData.setShares(stockData.getShares() - transaction.getSharesAmount());
+				stockData.setPrice(Math.round((pricePerShare + 0.005 * transaction.getSharesAmount()) * 1000.0) / 1000.0); // Simulate market activity
+			} else {
+				stockData.setShares(stockData.getShares() + transaction.getSharesAmount());
+				stockData.setPrice(Math.round((pricePerShare - 0.005 * transaction.getSharesAmount()) * 1000.0) / 1000.0); // Simulate market activity
+			}
 			stockDAO.updateStock(stockData);
 			transaction.setPricePerShare(pricePerShare);
 	

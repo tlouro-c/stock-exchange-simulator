@@ -59,7 +59,6 @@ public class TransactionService {
 		var afterTransactionProcessChain = buildAfterTransactionProcessChain();
 		try {
 			afterTransactionProcessChain.handleTransaction(transaction, marketController);
-			marketController.increaseTransactionsCount();
 			marketController.getMarketView().transactionProcessedMessage(transaction.getTransactionState());
 		} catch (Exception e) {
 			System.err.println(e.getMessage());

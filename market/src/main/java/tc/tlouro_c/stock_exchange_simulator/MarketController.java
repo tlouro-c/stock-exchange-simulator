@@ -21,7 +21,6 @@ public class MarketController {
 	private ConcurrentLinkedQueue<ByteBuffer> pendingResponses;
 	private Selector selector;
 	private SocketChannel channel;
-	private int transactionsCount;
 	private int port;
 	private boolean connected;
 	private ByteBuffer currentResponse;
@@ -31,7 +30,6 @@ public class MarketController {
 		transactionsService = TransactionService.getInstance();
 		processRequestsThreadPool = Executors.newCachedThreadPool();
 		pendingResponses = new ConcurrentLinkedQueue<>();
-		transactionsCount = -1;
 		connected = true;
 	}
 
@@ -96,7 +94,7 @@ public class MarketController {
 				marketView.lostConnectionMessage();
 			} else {
 				buffer.flip();
-				if (transactionsCount == -1) {
+				if (Market.getId() == "undefined") {
 					retrieveAssignedId(buffer);
 					transactionsService.init();
 				} else {
@@ -115,7 +113,6 @@ public class MarketController {
 		var idStart = bufferString.indexOf("Assigned ID: ") + "Assigned ID: ".length();
 		var idEnd = bufferString.indexOf("\n", idStart);
 		Market.setId(bufferString.substring(idStart, idEnd));
-		transactionsCount = 0;
 	}
 
 	private void configureClientSocket() throws IOException {
@@ -148,10 +145,6 @@ public class MarketController {
 
 	public void wakeUpSelector() {
 		selector.wakeup();
-	}
-
-	public void increaseTransactionsCount() {
-		transactionsCount++;
 	}
 
 	public MarketView getMarketView() {
