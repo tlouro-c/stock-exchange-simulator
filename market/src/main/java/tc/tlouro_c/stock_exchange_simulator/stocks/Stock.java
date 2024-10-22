@@ -14,6 +14,11 @@ public class Stock {
 		this.version = version;
 	}
 
+	public Stock copy() {
+		var copy = new Stock(symbol, shares, price, version);
+		return copy;
+	}
+
 	public String getSymbol() {
 		return symbol;
 	}

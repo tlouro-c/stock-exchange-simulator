@@ -11,6 +11,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import java.time.Duration;
+import java.time.Instant;
+
+import tc.tlouro_c.stock_exchange_simulator.stocks.StockDAO;
 import tc.tlouro_c.stock_exchange_simulator.transactions.TransactionService;
 
 public class MarketController {
@@ -18,6 +22,7 @@ public class MarketController {
 	private MarketView marketView;
 	private TransactionService transactionsService;
 	private ExecutorService processRequestsThreadPool;
+	private ExecutorService stockPriceUpdaterThread;
 	private ConcurrentLinkedQueue<ByteBuffer> pendingResponses;
 	private Selector selector;
 	private SocketChannel channel;
@@ -29,6 +34,7 @@ public class MarketController {
 		marketView = new MarketView();
 		transactionsService = TransactionService.getInstance();
 		processRequestsThreadPool = Executors.newCachedThreadPool();
+		stockPriceUpdaterThread = Executors.newSingleThreadExecutor();
 		pendingResponses = new ConcurrentLinkedQueue<>();
 		connected = true;
 	}
@@ -37,8 +43,9 @@ public class MarketController {
 		this.port = port;
 		try {
 			configureClientSocket();
+			var timeMarker = Instant.now();
 			while (connected) {
-				selector.select();
+				selector.select(5000);
 				var keys = selector.selectedKeys();
 				var keysIt = keys.iterator();
 				while (keysIt.hasNext()) {
@@ -49,6 +56,10 @@ public class MarketController {
 				if (currentResponse == null && !pendingResponses.isEmpty()) {
 					currentResponse = pendingResponses.poll();
 					channel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+				}
+				if (Duration.between(timeMarker, Instant.now()).compareTo(Duration.ofSeconds(5)) > 0) {
+					timeMarker = Instant.now();
+					stockPriceUpdaterThread.submit(() -> StockDAO.getInstance().simulateMarketActivity(marketView));
 				}
 			}
 		} catch (Exception e) {

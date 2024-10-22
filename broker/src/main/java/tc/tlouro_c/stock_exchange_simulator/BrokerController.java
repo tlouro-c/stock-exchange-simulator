@@ -9,6 +9,7 @@ import java.nio.channels.SocketChannel;
 import java.util.concurrent.ExecutorService;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
+import java.net.SocketException;
 
 import tc.tlouro_c.stock_exchange_simulator.orders.Order;
 import tc.tlouro_c.stock_exchange_simulator.orders.OrderService;
@@ -21,21 +22,19 @@ public class BrokerController {
 	private Selector selector;
 	private SocketChannel channel;
 	private int port;
-	private boolean connected;
 	private Order currentWritingOrder;
 
 	public BrokerController() {
 		brokerView = new BrokerView();
 		orderService = OrderService.getInstance();
 		processRequestsThreadPool = Executors.newCachedThreadPool();
-		connected = true;
 	}
 
 	public void startListening(int port) {
 		this.port = port;
 		try {
 			configureClientSocket();
-			while (connected) {
+			while (Broker.getConnection() == Connection.ALIVE || Broker.getConnection() == Connection.UNSET) {
 				selector.select();
 				var keys = selector.selectedKeys();
 				var keysIt = keys.iterator();
@@ -50,11 +49,9 @@ public class BrokerController {
 				}
 			}
 		} catch (Exception e) {
-			connected = false;
 			System.err.println(e.getMessage());
-			return;
 		}
-
+		Broker.setConnection(Connection.DEAD);
 	}
 
 	private void handleKey(SelectionKey key) {
@@ -80,6 +77,9 @@ public class BrokerController {
 			if (currentWritingOrder == null) {
 				channel.register(selector, SelectionKey.OP_READ);
 			}
+		} catch (SocketException e) {
+			Broker.setConnection(Connection.DEAD);
+			brokerView.lostConnectionMessage();
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		}
@@ -91,7 +91,7 @@ public class BrokerController {
 			var bytesRead = channel.read(buffer);
 			if (bytesRead == -1) {
 				channel.close();
-				connected = false;
+				Broker.setConnection(Connection.DEAD);
 				brokerView.lostConnectionMessage();
 			} else {
 				buffer.flip();
@@ -102,6 +102,9 @@ public class BrokerController {
 						orderService.processOrderResult(buffer, brokerView));
 				}
 			}
+		} catch (SocketException e) {
+			Broker.setConnection(Connection.DEAD);
+			brokerView.lostConnectionMessage();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -127,14 +130,14 @@ public class BrokerController {
 
 		try {
 			if (channel.finishConnect()) {
-				connected = true;
+				Broker.setConnection(Connection.ALIVE);
 				channel.register(selector, SelectionKey.OP_READ);
 				brokerView.successfulConnectionMessage();
 			} else {
 				brokerView.stillConnectingMessage();
 			}
 		} catch (Exception e) {
-			connected = false;
+			Broker.setConnection(Connection.DEAD);
 			brokerView.failedConnectionMessage();
 		}
 	}
@@ -143,8 +146,7 @@ public class BrokerController {
 		selector.wakeup();
 	}
 
-	public boolean isConnected() {
-		return connected;
+	public Selector getSelector() {
+		return selector;
 	}
-	
 }

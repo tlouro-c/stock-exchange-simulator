@@ -36,7 +36,14 @@ public class FixRequest {
 		}
 		var checksum = stringBuilder.toString().chars().sum() % 256;
 		stringBuilder.append("10=" + checksum + soh);
-		return ByteBuffer.wrap(stringBuilder.toString().getBytes());
+
+		var buffer = ByteBuffer.allocate(128);
+		buffer.put(stringBuilder.toString().getBytes());
+		while (buffer.position() < buffer.capacity()) {
+			buffer.put((byte) 0);
+		}
+		buffer.flip();
+		return buffer;
 	}
 
 	public void parse() throws InvalidFormatException  {

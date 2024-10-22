@@ -5,6 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import java.util.concurrent.ConcurrentHashMap;
+
+import tc.tlouro_c.stock_exchange_simulator.MarketView;
 import tc.tlouro_c.stock_exchange_simulator.utils.DatabaseConnectionProvider;
 
 public class StockDAO {
@@ -12,11 +15,13 @@ public class StockDAO {
 	private static StockDAO instance;
 	private DatabaseConnectionProvider databaseConnectionProvider;
 	private StockRealTimeDataProvider stockRealTimeDataProvider;
+	private ConcurrentHashMap<String, Stock> stocksLocalCopy;
 	private boolean isTablePopulated;
 	
 	private StockDAO() {
 		databaseConnectionProvider = DatabaseConnectionProvider.getInstance();
 		stockRealTimeDataProvider = StockRealTimeDataProvider.getInstance();
+		stocksLocalCopy = new ConcurrentHashMap<>();
 		isTablePopulated = false;
 	}
 
@@ -61,14 +66,34 @@ public class StockDAO {
 			PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
 			for (var symbol : stocksSymbol) {
+				var price = stockRealTimeDataProvider.fetchLiveStockPrice(symbol);
 				pstmt.setString(1, symbol);
 				pstmt.setInt(2, 10000);
-				pstmt.setDouble(3, stockRealTimeDataProvider.fetchLiveStockPrice(symbol));
+				pstmt.setDouble(3, price);
 				pstmt.execute();
+				stocksLocalCopy.put(symbol, new Stock(symbol, 10000, price, 1));
 			}
 	
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
+		}
+	}
+
+	public void simulateMarketActivity(MarketView marketView) {
+
+		for (var stockSymbol : stocksLocalCopy.entrySet()) {
+			var stockCopy = stockSymbol.getValue().copy();
+			var oldPrice = stockCopy.getPrice();
+			var volatility = oldPrice * 0.01;
+			var maxPrice = stockCopy.getPrice() + volatility;
+			var minPrice = stockCopy.getPrice() - volatility;
+			var newPrice = Math.round((Math.random() * (maxPrice - minPrice) + minPrice) * 100) / 100.00;
+	
+			stockCopy.setPrice(newPrice);
+			try {
+				updateStock(stockCopy);
+			} catch (Exception _e) {};
+			marketView.marketAdjustmentOutput(stockSymbol.getKey(), oldPrice, newPrice);
 		}
 	}
 
@@ -99,22 +124,22 @@ public class StockDAO {
 
 		try (Connection conn = databaseConnectionProvider.getConnection();
 			PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+			newStockData.setVersion(newStockData.getVersion() + 1);
 			
 			pstmt.setInt(1, newStockData.getShares());
 			pstmt.setDouble(2, newStockData.getPrice());
-			pstmt.setInt(3, newStockData.getVersion() + 1);
+			pstmt.setInt(3, newStockData.getVersion());
 			pstmt.setString(4, newStockData.getSymbol());
 			pstmt.setInt(5, newStockData.getVersion());
 			pstmt.executeUpdate();
+			stocksLocalCopy.put(newStockData.getSymbol(), newStockData);
 
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 			throw new StockVersionConflictException();
 		}
 	}
-
-
-
 
 	public class StockNotFoundException extends Exception {
 		public StockNotFoundException() {

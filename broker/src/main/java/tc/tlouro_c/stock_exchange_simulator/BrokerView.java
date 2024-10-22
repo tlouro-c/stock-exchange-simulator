@@ -8,7 +8,6 @@ public class BrokerView {
 	private String red = "\033[0;31m";
 	private String green = "\033[0;32m";
 	private String yellow = "\033[0;33m";
-	private String blue = "\033[0;34m";
 	private String reset = "\033[0m";
 
 	public void lostConnectionMessage() {

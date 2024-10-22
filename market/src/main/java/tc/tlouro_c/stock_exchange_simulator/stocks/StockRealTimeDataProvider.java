@@ -39,6 +39,11 @@ public class StockRealTimeDataProvider {
 	}
 
 	public double fetchLiveStockPrice(String stockSymbol) {
+		if (api_key == null) {
+			System.err.println("API key not found, returning dummy value");
+			double randomPrice = 50 + (Math.random() * (300 - 50));
+			return Math.round(randomPrice * 100) / 100.00;
+		}
 		double price = -1.0;
 		String polygonUrl = "https://api.polygon.io/v2/aggs/ticker/" + stockSymbol + "/prev?apiKey=" + api_key;
 		
@@ -51,7 +56,10 @@ public class StockRealTimeDataProvider {
 			price = results.getDouble("c");
 		
 		} catch (Exception e) {
-			System.err.println(e.getMessage());
+			System.err.println(e.getMessage() + ": API currently unavailable "
+				+ "(max 5 requests per minute or invalid key), returning dummy value");
+			double randomPrice = 50 + (Math.random() * (300 - 50));
+			return Math.round(randomPrice * 100) / 100.00;
 		}
 		return price;
 	}

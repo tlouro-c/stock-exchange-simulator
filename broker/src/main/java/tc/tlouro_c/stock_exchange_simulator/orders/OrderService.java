@@ -8,19 +8,19 @@ import tc.tlouro_c.stock_exchange_simulator.Broker;
 import tc.tlouro_c.stock_exchange_simulator.BrokerController;
 import tc.tlouro_c.stock_exchange_simulator.BrokerView;
 import tc.tlouro_c.stock_exchange_simulator.FixRequest;
-
-
-import java.util.Scanner;
+import tc.tlouro_c.stock_exchange_simulator.strategies.TradingStrategy;
 
 public class OrderService {
 
 	private static OrderService instance;
 	private ConcurrentHashMap<Integer, Order> pendingOrders;
 	private ConcurrentLinkedQueue<Order> ordersInQueue;
+	private ConcurrentHashMap<String, Integer> portfolio;
 
 	private OrderService() {
 		pendingOrders = new ConcurrentHashMap<>();
 		ordersInQueue = new ConcurrentLinkedQueue<>();
+		portfolio = new ConcurrentHashMap<>();
 	};
 
 	public static OrderService getInstance() {
@@ -61,35 +61,17 @@ public class OrderService {
 			
 			if (order.getState() == OrderState.EXECUTED) {
 				Broker.updateBalance(order);
+				var instrument = order.getInstrument();
+				portfolio.compute(instrument, (k, v) -> v == null ? order.getShares() : v + order.getShares());
 			}
 			brokerView.orderOutputMessage(order);
-			brokerView.brokerBalanceOutput();
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		}
 	}
 
-	public void startPlacingOrders(String market, BrokerController brokerController) {
-
-		while (brokerController.isConnected()) {
-			try {
-				Thread.sleep(4000);
-				var orderFactory = OrderFactory.getInstance();
-				var newBuyOrder = orderFactory.newOrder("BUY");
-				var orderBuilder = new OrderBuilder(newBuyOrder);
-				newBuyOrder = orderBuilder.instrument("AAPL")
-										.limitPricePerShare(250)
-										.shares(1)
-										.market(market)
-										.build();
-				placeOrder(newBuyOrder);
-				if (brokerController.isConnected()) {
-					brokerController.wakeUpSelector();
-				}
-			} catch(Exception e) {
-				break;
-			}
-		}
+	public void startPlacingOrders(String market, BrokerController brokerController, TradingStrategy tradingStrategy) {
+			tradingStrategy.start(ordersInQueue, brokerController.getSelector(), market, portfolio);
 	}
 
 	public Order getNextOrder() {

@@ -35,5 +35,19 @@ public class MarketView {
 		System.out.println(color + "Transaction was processed: " + state.name() + reset);
 	}
 
+	public void marketAdjustmentOutput(String stockSymbol, double oldPrice, double newPrice) {
+
+		var marketAdjustment = newPrice - oldPrice;
+		var percentageChange = (marketAdjustment / newPrice) * 100;
+
+        if (marketAdjustment > 0) {
+            System.out.println(stockSymbol + " Market Adjustment: " + newPrice
+				 + green + " ( " + String.format("%.2f", percentageChange) + "% )" + reset);
+        } else {
+            System.out.println(stockSymbol + " Market Adjustment: " + newPrice
+				 + red + " ( " + String.format("%.2f", percentageChange) + "% )" + reset);
+        }
+    }
+
 
 }
