@@ -7,8 +7,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import tc.tlouro_c.stock_exchange_simulator.broker.Broker;
 import tc.tlouro_c.stock_exchange_simulator.broker.BrokerController;
 import tc.tlouro_c.stock_exchange_simulator.broker.BrokerView;
+import tc.tlouro_c.stock_exchange_simulator.Connection;
 import tc.tlouro_c.stock_exchange_simulator.FixRequest;
 import tc.tlouro_c.stock_exchange_simulator.broker.strategies.TradingStrategy;
+import tc.tlouro_c.stock_exchange_simulator.broker.strategies.TradingManualMode;
 
 public class OrderService {
 
@@ -71,8 +73,25 @@ public class OrderService {
 	}
 
 	public void startPlacingOrders(String market, BrokerController brokerController, TradingStrategy tradingStrategy) {
-			tradingStrategy.start(ordersInQueue, brokerController.getSelector(), market, portfolio);
+		try {
+			while (Broker.getConnection() == Connection.UNSET) {
+				Thread.sleep(1000);
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		if (Broker.getConnection() == Connection.ALIVE) {
+			tradingStrategy.start(ordersInQueue, brokerController, market, portfolio);
+		}
+		brokerController.getBrokerView().algorithmFinishedMessage();
+		if (Broker.getConnection() == Connection.ALIVE && !(tradingStrategy instanceof TradingManualMode)) {
+			tradingStrategy = new TradingManualMode();
+			tradingStrategy.start(ordersInQueue, brokerController, market, portfolio);
+		}
+		
 	}
+
+	
 
 	public Order getNextOrder() {
 		return ordersInQueue.poll();

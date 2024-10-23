@@ -63,13 +63,52 @@ The **Broker** component connects to the Router and handles placing buy and sell
 
 This project is organized as a **multi-module Maven** build with separate modules for each component: Router, Market, and Broker.
 
+### Setup
+
+Before building the project, you should acquire a Polygon API key. This key is necessary for fetching real stock data for the Market component. If you do not provide a key, the application will use dummy stock values.
+
+1. Get your API key from [Polygon.io](https://polygon.io/).
+2. Create a `.env` file in the folder where you will run the programs. This file should contain the following line:
+
+   ```plaintext
+   api-key=your_api_key_here
+   ```
+
+If you don’t want to use the API, you can leave the `.env` file out, and the system will simulate stock prices with dummy values.
+
 ### Building the Project
 
-To build the project and generate runnable JARs for each component, run the following command from the root directory:
+To build the project and generate runnable JARs for each component, run the following command from the root directory of the project:
 
 ```bash
 mvn clean package
+```
 
+This will create a `jars` directory in the root of the project, which contains the compiled JARs for each component (`router`, `market`, and `broker`).
+
+### Running the Components
+
+1. **Start the Router**: The Router is the central component of the system and must be started first. To run it, use the following command:
+
+   ```bash
+   java -jar jars/router.jar
+   ```
+
+2. **Start the Market**: After starting the Router, you can start the Market component. The Market will connect to the Router and receive an ID. Use the command:
+
+   ```bash
+   java -jar jars/market.jar
+   ```
+
+   After the Market starts, it will print a unique ID to the console, which you will need to use for the Broker.
+
+3. **Start the Broker**: Once the Market is running and has provided an ID, you can start the Broker component. The Broker needs the Market's ID to interact with it. To run the Broker, use the following command, replacing `<market_id>` with the actual ID received from the Market:
+
+   ```bash
+   java -jar jars/broker.jar <market_id>
+   ```
+
+Once all components are running, the system will simulate stock trading between the Broker and the Market via the Router. The Broker will submit buy/sell orders, and the Market will process these transactions based on the stock information.
 
 
 https://liakh-aliaksandr.medium.com/java-sockets-i-o-blocking-non-blocking-and-asynchronous-fb7f066e4ede

@@ -76,17 +76,7 @@ public class Broker {
 		Broker.setInitialBalance(100000.0);
 
 		threadPool.submit(() -> brokerController.startListening(8000));
-		try {
-			while (Broker.getConnection() == Connection.UNSET) {
-				Thread.sleep(1000);
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			return;
-		}
-		if (Broker.getConnection() == Connection.ALIVE) {
-			threadPool.submit(() -> orderService.startPlacingOrders(args[0], brokerController, new TradingAlgorithmOne()));
-		}
+		threadPool.submit(() -> orderService.startPlacingOrders(args[0], brokerController, new TradingAlgorithmOne()));
 		
 		threadPool.shutdown();
 	}

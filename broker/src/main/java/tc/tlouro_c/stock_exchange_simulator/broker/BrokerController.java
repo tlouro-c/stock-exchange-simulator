@@ -151,4 +151,8 @@ public class BrokerController {
 	public Selector getSelector() {
 		return selector;
 	}
+
+	public BrokerView getBrokerView() {
+		return brokerView;
+	}
 }

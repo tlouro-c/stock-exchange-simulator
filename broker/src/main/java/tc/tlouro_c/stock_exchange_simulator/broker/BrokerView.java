@@ -56,4 +56,30 @@ public class BrokerView {
         System.out.printf("Difference:       $%.2f (%s)%n", Math.abs(difference), profitOrLoss);
         System.out.println("===================================");
 	}
+
+	public void algorithmFinishedMessage() {
+		System.out.println("\nAlgorithm finished.");
+	}
+
+	public void goingToManualModeMessage() {
+		System.out.println("\nGoing to manual mode.");
+	}
+
+
+	public void placeOrderPrompt() {
+		System.out.println("-> Place An Order <-");
+		System.out.println("[ 1 ]  Buy  |  [ 2 ] Sell  |  [ 3 ] Quit ");
+	}
+
+	public void pricePerSharePrompt() {
+		System.out.print("Price per stock: ");
+	}
+
+	public void instrumentPrompt() {
+		System.out.print("Instrument: ");
+	}
+
+	public void sharesPrompt() {
+		System.out.print("Shares: ");
+	}
 }
