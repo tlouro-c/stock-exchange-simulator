@@ -78,6 +78,7 @@ public abstract class Order {
 	}
 	public void setLimitPricePerShare(double limitPricePerShare) {
 		this.limitPricePerShare = limitPricePerShare;
+		this.total = limitPricePerShare * shares;
 	}
 	public int getShares() {
 		return shares;
@@ -85,6 +86,7 @@ public abstract class Order {
 	public void setShares(int shares) {
 		this.shares = shares;
 	}
+
 	public int getSide() {
 		return side;
 	}
@@ -117,5 +119,12 @@ public abstract class Order {
 
 	public double getTotal() {
 		return total;
+	}
+
+	@Override
+	public String toString() {
+		return "Order [id=" + id + ", instrument=" + instrument + ", market=" + market + ", limitPricePerShare="
+				+ limitPricePerShare + ", shares=" + shares + ", side=" + side + ", state=" + state + ", realPricePerShare="
+				+ realPricePerShare + ", total=" + total + "]";
 	}
 }

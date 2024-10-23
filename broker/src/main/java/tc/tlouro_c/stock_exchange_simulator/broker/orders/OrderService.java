@@ -12,6 +12,8 @@ import tc.tlouro_c.stock_exchange_simulator.FixRequest;
 import tc.tlouro_c.stock_exchange_simulator.broker.strategies.TradingStrategy;
 import tc.tlouro_c.stock_exchange_simulator.broker.strategies.TradingManualMode;
 
+import java.util.concurrent.ExecutorService;
+
 public class OrderService {
 
 	private static OrderService instance;
@@ -64,7 +66,11 @@ public class OrderService {
 			if (order.getState() == OrderState.EXECUTED) {
 				Broker.updateBalance(order);
 				var instrument = order.getInstrument();
-				portfolio.compute(instrument, (k, v) -> v == null ? order.getShares() : v + order.getShares());
+				if (order.getSide() == 1) {
+					portfolio.compute(instrument, (k, v) -> v == null ? order.getShares() : v + order.getShares());
+				} else {
+					portfolio.compute(instrument, (k, v) -> v == null ? null : v - order.getShares());
+				}
 			}
 			brokerView.orderOutputMessage(order);
 		} catch (Exception e) {
@@ -72,7 +78,7 @@ public class OrderService {
 		}
 	}
 
-	public void startPlacingOrders(String market, BrokerController brokerController, TradingStrategy tradingStrategy) {
+	public void startPlacingOrders(String market, BrokerController brokerController, TradingStrategy tradingStrategy, ExecutorService threadPool) {
 		try {
 			while (Broker.getConnection() == Connection.UNSET) {
 				Thread.sleep(1000);
@@ -83,12 +89,12 @@ public class OrderService {
 		if (Broker.getConnection() == Connection.ALIVE) {
 			tradingStrategy.start(ordersInQueue, brokerController, market, portfolio);
 		}
-		brokerController.getBrokerView().algorithmFinishedMessage();
 		if (Broker.getConnection() == Connection.ALIVE && !(tradingStrategy instanceof TradingManualMode)) {
+			brokerController.getBrokerView().algorithmFinishedMessage();
 			tradingStrategy = new TradingManualMode();
 			tradingStrategy.start(ordersInQueue, brokerController, market, portfolio);
 		}
-		
+		System.exit(0);
 	}
 
 	

@@ -3,6 +3,9 @@ package tc.tlouro_c.stock_exchange_simulator.broker;
 import tc.tlouro_c.stock_exchange_simulator.broker.orders.Order;
 import tc.tlouro_c.stock_exchange_simulator.broker.orders.OrderState;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
+
 public class BrokerView {
 
 	private String red = "\033[0;31m";
@@ -67,8 +70,9 @@ public class BrokerView {
 
 
 	public void placeOrderPrompt() {
-		System.out.println("-> Place An Order <-");
-		System.out.println("[ 1 ]  Buy  |  [ 2 ] Sell  |  [ 3 ] Quit ");
+		System.out.println("\n-> Place An Order Menu <-");
+		System.out.println("[ 1 ]  Buy  |  [ 2 ] Sell  |  [ 3 ] Portfolio  |  [ 4 ] Broker Balance"
+					+ "  |  [ 5 ] Exit");
 	}
 
 	public void pricePerSharePrompt() {
@@ -81,5 +85,35 @@ public class BrokerView {
 
 	public void sharesPrompt() {
 		System.out.print("Shares: ");
+	}
+
+	public void placingOrderMessage() {
+		System.out.println("Placing order...");
+	}
+
+	public void printPortfolio(ConcurrentHashMap<String, Integer> portfolio) {
+
+		if (portfolio == null || portfolio.isEmpty()) {
+            System.out.println("Your portfolio is currently empty.");
+            return;
+        }
+
+        System.out.println("========== Your Stock Portfolio ==========");
+        System.out.printf("%-10s | %-15s\n", "Symbol", "Shares");
+        System.out.println("------------------------------------------");
+
+        for (Map.Entry<String, Integer> entry : portfolio.entrySet()) {
+            System.out.printf("%-10s | %-15d\n", entry.getKey(), entry.getValue());
+        }
+
+        System.out.println("==========================================");
+    }
+
+	public void insufficientFundsMessage() {
+		System.out.println(red + "Not enough funds to place the order." + reset);
+	}
+
+	public void insufficientSharesMessage() {
+		System.out.println(red + "Not enough shares to place the order." + reset);
 	}
 }

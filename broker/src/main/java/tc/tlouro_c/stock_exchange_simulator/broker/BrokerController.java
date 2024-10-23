@@ -54,6 +54,7 @@ public class BrokerController {
 		}
 		processRequestsThreadPool.shutdown();
 		Broker.setConnection(Connection.DEAD);
+		System.exit(0);
 	}
 
 	private void handleKey(SelectionKey key) {

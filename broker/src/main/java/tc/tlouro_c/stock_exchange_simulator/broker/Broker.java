@@ -5,7 +5,7 @@ import com.google.common.util.concurrent.AtomicDouble;
 import tc.tlouro_c.stock_exchange_simulator.Connection;
 import tc.tlouro_c.stock_exchange_simulator.broker.orders.Order;
 import tc.tlouro_c.stock_exchange_simulator.broker.orders.OrderService;
-import tc.tlouro_c.stock_exchange_simulator.broker.strategies.TradingAlgorithmOne;
+import tc.tlouro_c.stock_exchange_simulator.broker.strategies.TradingManualMode;
 
 import java.util.concurrent.Executors;
 
@@ -43,9 +43,9 @@ public class Broker {
 
 	public static double updateBalance(Order order) {
 		if (order.getSide() == 1) {
-			return subtractBalance(order.getRealPricePerShare());
+			return subtractBalance(order.getTotal());
 		} else {
-			return addBalance(order.getRealPricePerShare());
+			return addBalance(order.getTotal());
 		}
 	}
 
@@ -76,7 +76,7 @@ public class Broker {
 		Broker.setInitialBalance(100000.0);
 
 		threadPool.submit(() -> brokerController.startListening(8000));
-		threadPool.submit(() -> orderService.startPlacingOrders(args[0], brokerController, new TradingAlgorithmOne()));
+		threadPool.submit(() -> orderService.startPlacingOrders(args[0], brokerController, new TradingManualMode(), threadPool));
 		
 		threadPool.shutdown();
 	}

@@ -52,10 +52,10 @@ public class InputReader {
 
 	public int getIntBetween(int min, int max, String errorMessage) {
 
-		Integer input = -1;
+		Integer input = null;
 		int i = 0;
 
-		while (input < min || input > max) {
+		while (input == null || input < min || input > max) {
 			if (i != 0) {
 				System.out.println(errorMessage);
 			}
@@ -64,7 +64,28 @@ public class InputReader {
 			} catch (InputMismatchException e) {
 				System.out.println("Invalid number format");
 				scanner.next();
-				input = -2;
+				input = null;
+			}
+			i++;
+		}
+		return input;
+	}
+
+	public double getDoubleBetween(double min, double max, String errorMessage) {
+
+		Double input = null;
+		int i = 0;
+
+		while (input == null || input < min || input > max) {
+			if (i != 0) {
+				System.out.println(errorMessage);
+			}
+			try {
+				input = scanner.nextDouble();
+			} catch (InputMismatchException e) {
+				System.out.println("Invalid number format");
+				scanner.next();
+				input = null;
 			}
 			i++;
 		}
