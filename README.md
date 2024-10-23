@@ -16,9 +16,9 @@ The **Router** serves as the core server, facilitating communication between Bro
 
 - **Non-blocking Sockets**: The Router uses non-blocking sockets for improved efficiency and performance.
 - **Message Forwarding**: When a new message is received, the Router spawns a new thread to process it. The message undergoes a series of transformations using the **Chain of Responsibility** pattern, which handles the following steps:
-  - **Checksum Validation**: Ensures the message is not corrupted.
-  - **Destination Identification**: Looks up the routing table to find the correct recipient.
-  - **Message Forwarding**: Sends the message to the appropriate client (Broker or Market).
+  1. **Checksum Validation**: Ensures the message is not corrupted.
+  2. **Destination Identification**: Looks up the routing table to find the correct recipient.
+  3. **Message Forwarding**: Sends the message to the appropriate client (Broker or Market).
 
 This component doesn't handle business logic—it simply acts as a message dispatcher.
 
@@ -47,7 +47,7 @@ The Market's database operations are protected against concurrent access by usin
 
 ### 3. Broker (Client)
 
-The **Broker** component connects to the Router and handles placing buy and sell orders into the Market. Here, I implemented the **Strategy Pattern** to streamline the process of placing orders, making it easy to extend for future order types.
+The **Broker** component connects to the Router and handles placing buy and sell orders into the Market. Here, I implemented the **Strategy Pattern** to streamline the process of placing orders, making it easy to extend for different trading algorithms.
 
 #### Key Functions
 
