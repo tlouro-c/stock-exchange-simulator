@@ -37,6 +37,7 @@ public class BrokerView {
         System.out.println("              Order Summary        ");
         System.out.println("===================================");
         System.out.printf("Order ID:    %d%n", order.getId());
+		System.out.printf("Side:        %s%n", order.getSide() == 1 ? "Buy" : "Sell");
         System.out.printf("Status:      %s%s%s%n", color, order.getState(), reset);
 		System.out.printf("Instrument:  %s%n", order.getInstrument());
         System.out.printf("Price:       $%.2f%n", order.getRealPricePerShare());
@@ -115,5 +116,13 @@ public class BrokerView {
 
 	public void insufficientSharesMessage() {
 		System.out.println(red + "Not enough shares to place the order." + reset);
+	}
+
+	public void placingBuyOrderMessage() {
+		System.out.println("Placing buy order...");
+	}
+
+	public void placingSellOrderMessage() {
+		System.out.println("Placing sell order...");
 	}
 }
