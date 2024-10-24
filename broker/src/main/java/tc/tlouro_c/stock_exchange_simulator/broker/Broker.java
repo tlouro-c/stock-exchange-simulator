@@ -6,7 +6,6 @@ import tc.tlouro_c.stock_exchange_simulator.Connection;
 import tc.tlouro_c.stock_exchange_simulator.broker.orders.Order;
 import tc.tlouro_c.stock_exchange_simulator.broker.orders.OrderService;
 import tc.tlouro_c.stock_exchange_simulator.broker.strategies.TradingAlgorithmOne;
-import tc.tlouro_c.stock_exchange_simulator.broker.strategies.TradingManualMode;
 
 import java.util.concurrent.Executors;
 
