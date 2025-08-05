@@ -1,6 +1,10 @@
 package tc.tlouro_c.stock_exchange_simulator.market;
 
 import tc.tlouro_c.stock_exchange_simulator.market.transactions.TransactionState;
+import tc.tlouro_c.utils.Logger;
+
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 public class MarketView {
 
@@ -26,8 +30,10 @@ public class MarketView {
 		System.out.println(yellow + "Still connecting..." + reset);
 	}
 
-	public void processingTransactionMessage() {
-		System.out.println(blue + "Processing transaction on thread: " + Thread.currentThread().getName() + reset);
+	public void processingTransactionMessage(ByteBuffer buffer) {
+		String messageContent = StandardCharsets.UTF_8.decode(buffer.duplicate()).toString();
+		Logger.INFO("Processing transaction..." +
+				System.lineSeparator() + "Message content: " + messageContent);
 	}
 
 	public void transactionProcessedMessage(TransactionState state) {

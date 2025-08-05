@@ -132,16 +132,15 @@ public class RouterController {
 
 	private void process(SocketChannel channel, ByteBuffer buffer, RouterController routerController) {
 
-		var validateChecksum = new ValidateChecksum();
-		var IdentifyDestination = new IdentifyDestination();
-		var ForwardRequest = new ForwardRequest();
-		validateChecksum.setNextHandler(IdentifyDestination);
-		IdentifyDestination.setNextHandler(ForwardRequest);
-		var requestProcessingChain = validateChecksum;
+		var validateChecksumStep = new ValidateChecksum();
+		var identifyDestinationStep = new IdentifyDestination();
+		var ForwardRequestStep = new ForwardRequest();
+		validateChecksumStep.setNextHandler(identifyDestinationStep);
+		identifyDestinationStep.setNextHandler(ForwardRequestStep);
 
-		var request = new FixRequest(buffer);
+        var request = new FixRequest(buffer);
 		try {
-			requestProcessingChain.handleRequest(channel, request, routerController);
+			validateChecksumStep.handleRequest(channel, request, routerController);
 		} catch (Exception e) {
 			buffer = ByteBuffer.wrap((e.getMessage() + "\n").getBytes());
 			routerController.addToWriteQueue(channel);

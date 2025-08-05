@@ -67,17 +67,18 @@ public class TradingManualMode implements TradingStrategy {
 			brokerView.placeOrderPrompt();
 			var orderSideInput = ir.optionsBasedInput(Arrays.asList(1, 2, 3, 4, 5));
 			switch (orderSideInput) {
-			case 1:
-				return OrderFactory.getInstance().newOrder("BUY");
-			case 2:
-				return OrderFactory.getInstance().newOrder("SELL");
-			case 3:
-				brokerView.printPortfolio(portfolio);
-				break;
-			case 4:
-				brokerView.brokerBalanceOutput();
-			default:
-				return null;
+				case 1:
+					return OrderFactory.getInstance().newOrder("BUY");
+				case 2:
+					return OrderFactory.getInstance().newOrder("SELL");
+				case 3:
+					brokerView.printPortfolio(portfolio);
+					break;
+				case 4:
+					brokerView.brokerBalanceOutput();
+					break;
+				default:
+					return null;
 			}
 		}
 	}

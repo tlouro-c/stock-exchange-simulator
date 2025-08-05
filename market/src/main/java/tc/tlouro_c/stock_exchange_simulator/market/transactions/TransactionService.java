@@ -42,7 +42,7 @@ public class TransactionService {
 	}
 
 	public void handleTransaction(MarketController marketController, ByteBuffer buffer) {
-		marketController.getMarketView().processingTransactionMessage();
+		marketController.getMarketView().processingTransactionMessage(buffer);
 		var originalFixRequest = new FixRequest(buffer);
 		var transactionProcessChain = buildTransactionProcessChain();
 		Transaction transaction = null;

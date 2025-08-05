@@ -1,6 +1,7 @@
 package tc.tlouro_c.stock_exchange_simulator.router.handlers;
 
 import java.nio.channels.SocketChannel;
+import java.nio.charset.StandardCharsets;
 
 import tc.tlouro_c.stock_exchange_simulator.FixRequest;
 import tc.tlouro_c.stock_exchange_simulator.router.RouterController;
@@ -15,8 +16,10 @@ public class ForwardRequest extends ForwardRequestHandler {
 		routerController.addToWriteQueue(channel);
 		routerController.addToPendingData(channel, buffer);
 		try {
-			Logger.SUCCESS("Forwarding message to: " + channel.getRemoteAddress());
-		} catch (Exception _e) {}
+			String messageContent = StandardCharsets.UTF_8.decode(buffer.duplicate()).toString();
+			Logger.SUCCESS("Forwarding message to: " + channel.getRemoteAddress() +
+					System.lineSeparator() + "Message content: " + messageContent);
+		} catch (Exception ignored) {}
 	}
 	
 }

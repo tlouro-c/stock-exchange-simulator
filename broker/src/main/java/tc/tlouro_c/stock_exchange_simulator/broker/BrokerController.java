@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
@@ -98,7 +99,7 @@ public class BrokerController {
 				brokerView.lostConnectionMessage();
 			} else {
 				buffer.flip();
-				if (Broker.getId() == "undefined") {
+				if (Objects.equals(Broker.getId(), "undefined")) {
 					retrieveAssignedId(buffer);
 				} else {
 					processRequestsThreadPool.submit(() -> 

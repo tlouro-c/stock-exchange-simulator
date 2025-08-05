@@ -10,6 +10,7 @@ import java.net.http.HttpClient;
 import java.net.URI;
 
 import org.json.JSONObject;
+import tc.tlouro_c.utils.Logger;
 
 public class StockRealTimeDataProvider {
 
@@ -23,7 +24,7 @@ public class StockRealTimeDataProvider {
             properties.load(fis);
             api_key = properties.getProperty("api-key");
         } catch (IOException e) {
-            e.printStackTrace();
+			Logger.WARNING("API Key currently unavailable. Fictional prices will be used for the stock prices.");
         }
 	}
 
@@ -40,7 +41,6 @@ public class StockRealTimeDataProvider {
 
 	public double fetchLiveStockPrice(String stockSymbol) {
 		if (api_key == null) {
-			System.err.println("API key not found, returning dummy value");
 			double randomPrice = 50 + (Math.random() * (300 - 50));
 			return Math.round(randomPrice * 100) / 100.00;
 		}
@@ -51,10 +51,11 @@ public class StockRealTimeDataProvider {
 			HttpRequest request = HttpRequest.newBuilder().uri(new URI(polygonUrl)).build();
 			HttpClient httpClient = HttpClient.newHttpClient();
 			HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+			httpClient.close();
 			var jsonResponse = new JSONObject(response.body());
 			var results = jsonResponse.getJSONArray("results").getJSONObject(0);
 			price = results.getDouble("c");
-		
+
 		} catch (Exception e) {
 			System.err.println(e.getMessage() + ": API currently unavailable "
 				+ "(max 5 requests per minute or invalid key), returning dummy value");

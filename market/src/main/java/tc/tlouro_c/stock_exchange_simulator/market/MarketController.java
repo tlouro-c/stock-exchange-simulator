@@ -21,11 +21,11 @@ import tc.tlouro_c.stock_exchange_simulator.market.transactions.TransactionServi
 
 public class MarketController {
 
-	private MarketView marketView;
-	private TransactionService transactionsService;
-	private ExecutorService processRequestsThreadPool;
-	private ExecutorService stockPriceUpdaterThread;
-	private ConcurrentLinkedQueue<ByteBuffer> pendingResponses;
+	private final MarketView marketView;
+	private final TransactionService transactionsService;
+	private final ExecutorService processRequestsThreadPool;
+	private final ExecutorService stockPriceUpdaterThread;
+	private final ConcurrentLinkedQueue<ByteBuffer> pendingResponses;
 	private Selector selector;
 	private SocketChannel channel;
 	private int port;

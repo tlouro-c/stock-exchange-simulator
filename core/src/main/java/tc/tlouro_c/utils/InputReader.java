@@ -21,16 +21,23 @@ public class InputReader {
 	}
 
 	public Integer optionsBasedInput(List<Integer> listOfOptions) {
-
-		Integer input = 0;
-		int i = 0;
+		int input = 0;
+		boolean firstAttempt = true;
 
 		while (!listOfOptions.contains(input)) {
-			if (i != 0) {
+			if (!firstAttempt) {
 				System.out.println("Invalid Option");
 			}
-			input = scanner.nextInt();
-			i++;
+
+			try {
+				input = scanner.nextInt();
+			} catch (InputMismatchException e) {
+				scanner.nextLine();
+				firstAttempt = false;
+				continue;
+			}
+
+			firstAttempt = false;
 		}
 		return input;
 	}
